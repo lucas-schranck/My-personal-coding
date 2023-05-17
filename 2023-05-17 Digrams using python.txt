@@ -1,0 +1,40 @@
+def solution(S):
+    digram_positions = {}
+    max_distance = -1
+    
+    for i in range(len(S)-1):
+        digram = S[i:i+2]
+        if digram in digram_positions:
+            distance = i - digram_positions[digram]
+            if distance > max_distance:
+                max_distance = distance
+        else:
+            digram_positions[digram] = i
+    
+    return max_distance
+
+
+
+
+We initialize an empty dictionary digram_positions to store the positions of each digram encountered in the string S.
+We also initialize max_distance to -1, which will be updated whenever we find a new pair of identical digrams with a greater distance.
+We iterate over each index i in the range from 0 to len(S)-1.
+At each iteration, we extract the current digram by slicing S from index i to i+2.
+If the current digram is already present in digram_positions, we calculate the distance between the current index i and the previous occurrence of the digram stored in digram_positions[digram].
+If this distance is greater than max_distance, we update max_distance.
+If the current digram is not present in digram_positions, we add it to the dictionary along with its position i.
+Finally, we return the maximum distance found between identical digrams. If no such pair is found, the function returns -1.
+
+
+
+Example usage:
+
+
+print(solution("hellohello"))  # Output: 5
+print(solution("abcde"))       # Output: -1
+print(solution("abbabbabb"))   # Output: 6
+
+
+In the first example, the string "hellohello" contains two identical digrams "ll". The distance between the first occurrence at index 2 and the second occurrence at index 7 is 5, so the function returns 5.
+In the second example, there are no identical digrams in the string "abcde", so the function returns -1.
+In the third example, the string "abbabbabb" contains three identical digrams "bb". The distance between the first occurrence at index 1 and the third occurrence at index 7 is 6, which is the maximum distance, so the function returns 6.
