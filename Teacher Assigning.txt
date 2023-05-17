@@ -1,0 +1,72 @@
+import pandas as pd
+
+# Create an empty DataFrame to store teacher availability
+teacher_df = pd.DataFrame(columns=['Teacher', 'Morning', 'Afternoon', 'Evening'])
+
+# Prompt for teacher availability
+while True:
+    teacher_name = input("Enter teacher name: ")
+    morning_avail = input("Enter availability for morning (y/n): ").lower() == 'y'
+    afternoon_avail = input("Enter availability for afternoon (y/n): ").lower() == 'y'
+    evening_avail = input("Enter availability for evening (y/n): ").lower() == 'y'
+
+    # Add teacher availability to DataFrame
+    teacher_df = teacher_df.append({'Teacher': teacher_name,
+                                    'Morning': morning_avail,
+                                    'Afternoon': afternoon_avail,
+                                    'Evening': evening_avail},
+                                   ignore_index=True)
+
+    add_another = input("Do you want to add another teacher? (y/n): ").lower()
+    if add_another != 'y':
+        break
+
+# Create an empty DataFrame to store class schedule
+class_df = pd.DataFrame(columns=['Class', 'Day', 'Time'])
+
+# Prompt for class schedule
+while True:
+    class_name = input("Enter class name: ")
+    day = input("Enter class day: ")
+    time = input("Enter class time (e.g., 9am, 2pm): ")
+
+    # Add class schedule to DataFrame
+    class_df = class_df.append({'Class': class_name,
+                                'Day': day,
+                                'Time': time},
+                               ignore_index=True)
+
+    add_another = input("Do you want to add another class? (y/n): ").lower()
+    if add_another != 'y':
+        break
+
+# Create a new Excel file
+filename = 'teacher_class_schedule.xlsx'
+writer = pd.ExcelWriter(filename, engine='xlsxwriter')
+
+# Define colors for teacher names
+colors = ['#FFC000', '#00B0F0', '#92D050', '#FF0000', '#7030A0']
+
+# Iterate over teachers and assign classes based on availability
+for i, teacher in enumerate(teacher_df['Teacher']):
+    teacher_classes = class_df.sample(frac=1).reset_index(drop=True)  # Shuffle classes
+
+    # Filter classes based on teacher availability
+    teacher_classes = teacher_classes[teacher_classes['Day'].isin(teacher_classes['Day'])]
+    if teacher_df.at[i, 'Morning'] is False:
+        teacher_classes = teacher_classes[~teacher_classes['Time'].str.contains('am')]
+    if teacher_df.at[i, 'Afternoon'] is False:
+        teacher_classes = teacher_classes[~teacher_classes['Time'].str.contains('pm')]
+
+    # Assign colors to teacher names in the Excel file
+    teacher_color = colors[i % len(colors)]
+    teacher_df.at[i, 'Teacher'] = f'=COLOR("{teacher_color}"){teacher}'
+
+    # Write teacher-class assignment to Excel file
+    teacher_classes.to_excel(writer, sheet_name=teacher, index=False)
+
+# Save and close the Excel file
+writer.save()
+writer.close()
+
+print(f"Teacher-class assignments saved in '{filename}'.")
